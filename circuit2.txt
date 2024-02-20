@@ -1,0 +1,12 @@
+* Schematics Netlist * 
+RR1 Vout Vin 200 
+CC1 0 Vout 100u 
+VVS1 Vin 0 PULSE(0 5 250m 1n 1n 500m 1000m) 
+.tran 1ms 3s   
+.end 
+.control
+run 
+set color0 = white
+set xbrushwidth = 5 
+plot v(Vin) v(Vout)
+.endc

@@ -1,0 +1,50 @@
+* Buffer simulation
+.include "../Models/MOSIS.txt"
+Cload 0 net1 100fF
+Cload1 0 buf_in 100fF
+Cload2 0 buf_mid 100fF
+Cload3 0 buf_out 100fF
+Cload4 0 buf_out_final 100fF
+*Cload5 0 buf_out_final2 100fF
+*Cload6 0 buf_out_final3 100fF
+
+
+Vsupply vdd 0 1.8V
+.global vdd
+
+.subckt inv in out wp=1u wn=1u
+Mp0 out in vdd vdd ibm0p13pmos W='wp' L=0.13u
+Mn0 out in 0 0 ibm0p13nmos W='wn' L=0.12u
+.ends
+
+*VPulse1 Vin 0  pulse(0 1.8V 0 0.2n 0.2n 1.6n 4n)
+
+*input conditioning 
+xinv0 buf_out_final net1 inv wp=5.4u wn=2.23u
+xinv1 net1 buf_in inv wp=5.4u wn=2.23u
+
+*buffer
+xinv2 buf_in buf_mid inv wp=5.4u wn=2.23u
+xinv3 buf_mid buf_out inv wp=5.4u wn=2.23u
+
+xinv4 buf_out buf_out_final inv wp=5.4u wn=2.23u
+*xinv5 buf_out_final buf_out_final2 inv wp=5.4u wn=2.23u
+*xinv6 buf_out_final2 buf_out_final3 inv wp=5.4u wn=2.23u
+
+.TRAN 2p 9n
+.end
+
+
+.control
+Run
+set color0 = white
+set xbrushwidth = 5  
+*plot v(net1) v(buf_in) v(buf_mid) v(buf_out) v(buf_out_final)
+plot v(buf_out_final)
+*for buf_mid going high to low measure from 50% buf_in to 50% of of buf_mid
+
+meas tran tphl1 TRIG V(buf_in) val=0.9 TD=4n rise=1 TARG V(buf_mid) val=0.9 TD=4n fall=1
+meas tran tplh1 TRIG V(buf_in) val=0.9 TD=4n fall=1 TARG V(buf_mid) val=0.9 TD=4n rise=1
+meas tran tplh2 TRIG V(buf_mid) val=0.9 TD=4n fall=1 TARG V(buf_out) val=0.9 TD=4n rise=1
+meas tran tphl2 TRIG V(buf_mid) val=0.9 TD=4n rise=1 TARG V(buf_out) val=0.9 TD=4n fall=1
+.endc
